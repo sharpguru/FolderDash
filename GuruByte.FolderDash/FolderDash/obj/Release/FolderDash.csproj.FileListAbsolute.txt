@@ -1,0 +1,14 @@
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\bin\Release\FolderDash.exe.config
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\bin\Release\FolderDash.exe
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\bin\Release\FolderDash.pdb
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Release\App.baml
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Release\Windows\FolderDash.g.cs
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Release\App.g.cs
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Release\FolderDash_MarkupCompile.cache
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Release\FolderDash_MarkupCompile.lref
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Release\Windows\FolderDash.baml
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Release\FolderDash.g.resources
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Release\FolderDash.Properties.Resources.resources
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Release\FolderDash.csproj.GenerateResource.Cache
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Release\FolderDash.exe
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Release\FolderDash.pdb

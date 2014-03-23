@@ -60,14 +60,13 @@ namespace FolderDash.Windows
             Application.Current.Shutdown(0);
         }
 
-        private void Main_Menu_Save_Click(object sender, RoutedEventArgs e)
+        private void MainMenu_File_NewDashboard_Click(object sender, RoutedEventArgs e)
         {
+            System.Diagnostics.Process dashboard = new System.Diagnostics.Process();
+            string filename = this.GetType().Assembly.Location;
+            dashboard.StartInfo.FileName = filename;
 
-        }
-
-        private void Main_Menu_SaveAs_Click(object sender, RoutedEventArgs e)
-        {
-
+            dashboard.Start();
         }
     }
 }
