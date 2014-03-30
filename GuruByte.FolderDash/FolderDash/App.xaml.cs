@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FolderDash.Models;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -13,5 +14,18 @@ namespace FolderDash
     /// </summary>
     public partial class App : Application
     {
+        public Dashboard CurrentDashboard { get; set; }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            CurrentDashboard = new Dashboard();
+
+            if (e != null && e.Args != null && e.Args.Count() > 0)
+            {
+                CurrentDashboard = Dashboard.Load(e.Args[0]);
+            }
+
+            base.OnStartup(e);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FolderDash.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -62,9 +63,29 @@ namespace FolderDash.Windows
 
         private void MainMenu_File_NewDashboard_Click(object sender, RoutedEventArgs e)
         {
+            var inputWindow = new InputBox();
+            var result = inputWindow.ShowDialog();
+
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                if (inputWindow.Value.IsNullOrEmpty())
+                {
+                    MessageBox.Show("Name is required!");
+                }
+                else
+                {
+                    Dashboard dashboard = new Dashboard() { Name = inputWindow.Value };
+                    dashboard.Save();
+                }
+            }
+        }
+
+        private void FolderTree_Dashboards_Dashboard_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
             System.Diagnostics.Process dashboard = new System.Diagnostics.Process();
-            string filename = this.GetType().Assembly.Location;
-            dashboard.StartInfo.FileName = filename;
+            string location = this.GetType().Assembly.Location;
+            dashboard.StartInfo.FileName = location;
+            dashboard.StartInfo.Arguments = ((TreeViewItem)sender).Header.ToString();
 
             dashboard.Start();
         }
