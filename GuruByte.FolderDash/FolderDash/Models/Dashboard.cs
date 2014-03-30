@@ -25,14 +25,22 @@ namespace FolderDash.Models
             }
         }
 
+        public App CurrentApplication
+        {
+            get
+            {
+                return App.Current as FolderDash.App;
+            }
+        }
+
         public string SettingsFile
         {
             get
             {
-                string AppData = Environment.ExpandEnvironmentVariables("%AppData%");
+                string AppDataPath = Environment.ExpandEnvironmentVariables(CurrentApplication.ApplicationDataPath);
 
                 // Get settings file if it exists
-                string settingsfile = Path.Combine(AppData, Name.CleanFilename(), ".dashboard");
+                string settingsfile = Path.Combine(AppDataPath, Name.CleanFilename() + ".dashboard");
 
                 return settingsfile;
             }
@@ -41,12 +49,12 @@ namespace FolderDash.Models
         /// <summary>
         /// Load or reload settings from settings file
         /// </summary>
-        static public Dashboard Load(string Name)
+        static public Dashboard Load(string filename)
         {
-            Dashboard dashboard = new Dashboard() { Name = Name };
+            Dashboard dashboard = new Dashboard();
 
-            string AppData = Environment.ExpandEnvironmentVariables("%AppData%");
-            string settingsfile = Path.Combine(AppData, Name.CleanFilename(), ".dashboard");
+            string AppDataPath = Environment.ExpandEnvironmentVariables(dashboard.CurrentApplication.ApplicationDataPath);
+            string settingsfile = Path.Combine(AppDataPath, filename.CleanFilename() + ".dashboard");
 
             if (File.Exists(settingsfile))
             {

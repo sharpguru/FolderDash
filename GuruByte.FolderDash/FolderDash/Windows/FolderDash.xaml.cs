@@ -21,13 +21,47 @@ namespace FolderDash.Windows
     /// </summary>
     public partial class FolderDash : Window
     {
+        public App CurrentApplication
+        {
+            get
+            {
+                return App.Current as App;
+            }
+        }
+
         public FolderDash()
         {
             InitializeComponent();
 
             this.SizeChanged += FolderDash_SizeChanged;
 
-            // TODO: Load Dashboards
+            this.Title = "FolderDash - {0}".FormatString(CurrentApplication.CurrentDashboard.Name);
+
+            #region Load Dashboards
+            var dashboardfiles = Directory.EnumerateFiles(CurrentApplication.ApplicationDataPath, "*.dashboard");
+            List<Dashboard> dashboardlist = new List<Dashboard>();
+            
+            foreach (var f in dashboardfiles)
+            {
+                string filename = System.IO.Path.GetFileNameWithoutExtension(f);
+                dashboardlist.Add(Dashboard.Load(filename));
+            }
+
+            if (dashboardlist.Where(db => db.Name == "[Default]").Count() == 0)
+            {
+                var item = new TreeViewItem();
+                item.Header = "[Default]";
+                item.MouseDoubleClick += FolderTree_Dashboards_Dashboard_MouseDoubleClick;
+                FolderTree_Dashboards.Items.Add(item);
+            }
+            foreach (var d in dashboardlist.OrderBy(x => x.Name))
+            {
+                var item = new TreeViewItem();
+                item.Header = d.Name;
+                item.MouseDoubleClick += FolderTree_Dashboards_Dashboard_MouseDoubleClick;
+                FolderTree_Dashboards.Items.Add(item);
+            }
+            #endregion // Load Dashboards
 
             // Load Computer drives
             DriveInfo[] drives = DriveInfo.GetDrives();
@@ -63,7 +97,7 @@ namespace FolderDash.Windows
 
         private void MainMenu_File_NewDashboard_Click(object sender, RoutedEventArgs e)
         {
-            var inputWindow = new InputBox();
+            var inputWindow = new InputBox() { Title = "New Dashboard", Prompt = "Name:" };
             var result = inputWindow.ShowDialog();
 
             if (result == System.Windows.Forms.DialogResult.OK)
