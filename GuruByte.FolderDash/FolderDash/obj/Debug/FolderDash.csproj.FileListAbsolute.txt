@@ -14,3 +14,5 @@ C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\De
 C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Debug\FolderDash.pdb
 C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Debug\FolderDash_MarkupCompile.lref
 C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\obj\Debug\FolderDash.Windows.InputBox.resources
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\bin\Debug\CrossButton.dll
+C:\Users\Brian\Documents\GitHub\FolderDash\GuruByte.FolderDash\FolderDash\bin\Debug\CrossButton.pdb

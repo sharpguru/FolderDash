@@ -29,6 +29,20 @@ namespace FolderDash.Windows
             }
         }
 
+        private List<Dashboard> _dashboardlist = new List<Dashboard>();
+        public List<Dashboard> DashboardList
+        {
+            get
+            {
+                return _dashboardlist;
+            }
+
+            set
+            {
+                _dashboardlist = value; 
+            }
+        }
+
         public FolderDash()
         {
             InitializeComponent();
@@ -39,26 +53,24 @@ namespace FolderDash.Windows
 
             #region Load Dashboards
             var dashboardfiles = Directory.EnumerateFiles(CurrentApplication.ApplicationDataPath, "*.dashboard");
-            List<Dashboard> dashboardlist = new List<Dashboard>();
             
             foreach (var f in dashboardfiles)
             {
                 string filename = System.IO.Path.GetFileNameWithoutExtension(f);
-                dashboardlist.Add(Dashboard.Load(filename));
+                DashboardList.Add(Dashboard.Load(filename));
             }
 
-            if (dashboardlist.Where(db => db.Name == "[Default]").Count() == 0)
+            if (DashboardList.Where(db => db.Name == "[Default]").Count() == 0)
             {
-                var item = new TreeViewItem();
-                item.Header = "[Default]";
-                item.MouseDoubleClick += FolderTree_Dashboards_Dashboard_MouseDoubleClick;
-                FolderTree_Dashboards.Items.Add(item);
+                DashboardList.Add(new Dashboard() { Name = "[Default]" });
             }
-            foreach (var d in dashboardlist.OrderBy(x => x.Name))
+
+            foreach (var d in DashboardList.OrderBy(x => x.Name))
             {
                 var item = new TreeViewItem();
                 item.Header = d.Name;
                 item.MouseDoubleClick += FolderTree_Dashboards_Dashboard_MouseDoubleClick;
+                item.Selected += FolderTree_Dashboards_Dashboard_item_Selected;
                 FolderTree_Dashboards.Items.Add(item);
             }
             #endregion // Load Dashboards
@@ -82,6 +94,52 @@ namespace FolderDash.Windows
             }
 
             // TODO: Load Network shares
+        }
+
+        void FolderTree_Dashboards_Dashboard_item_Selected(object sender, RoutedEventArgs e)
+        {
+            TreeViewItem item = (TreeViewItem)sender;
+            var dash = DashboardList.Find(d => d.Name == item.Header.ToString());
+
+            DashboardTabs.Items.Clear();
+
+            // Folder Image
+            Image img = new Image();
+            img.Width = 24;
+            BitmapImage logo = new BitmapImage();
+            logo.BeginInit();
+            logo.UriSource = new Uri("pack://application:,,,/FolderDash;component/Assets/folder.ico");
+            logo.EndInit();
+            img.Source = logo;
+
+            // Tab label
+            TextBlock tablabel = new TextBlock();
+            tablabel.Text = " " + dash.Name + " - Dashboard ";
+
+             // Close Button
+            Button closebutton = new Button();
+            closebutton.Click += DashboardTabs_Tab_CloseButton_Click;
+            closebutton.Content = "X";
+
+            // Tab Label Header stackpanel container
+            StackPanel stackpanel = new StackPanel();
+            stackpanel.Orientation = Orientation.Horizontal;
+            stackpanel.Children.Add(img);
+            stackpanel.Children.Add(tablabel);
+            stackpanel.Children.Add(closebutton);
+
+            TabItem tabitem = new TabItem();
+            tabitem.Header = stackpanel;
+            DashboardTabs.Items.Add(tabitem);
+
+        }
+
+        private void DashboardTabs_Tab_CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            Button btn = (Button)sender;
+            StackPanel sp = (StackPanel)btn.Parent;
+            TabItem tab = (TabItem)(sp.Parent);
+            DashboardTabs.Items.Remove(tab);
         }
 
         void FolderDash_SizeChanged(object sender, SizeChangedEventArgs e)
