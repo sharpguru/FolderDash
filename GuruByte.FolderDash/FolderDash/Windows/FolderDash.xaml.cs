@@ -105,7 +105,7 @@ namespace FolderDash.Windows
 
             // Folder Image
             Image img = new Image();
-            img.Width = 24;
+            img.Width = 16;
             BitmapImage logo = new BitmapImage();
             logo.BeginInit();
             logo.UriSource = new Uri("pack://application:,,,/FolderDash;component/Assets/folder.ico");
@@ -116,10 +116,10 @@ namespace FolderDash.Windows
             TextBlock tablabel = new TextBlock();
             tablabel.Text = " " + dash.Name + " - Dashboard ";
 
-             // Close Button
-            Button closebutton = new Button();
+            CrossButton.CrossButton closebutton = new CrossButton.CrossButton();
             closebutton.Click += DashboardTabs_Tab_CloseButton_Click;
-            closebutton.Content = "X";
+            closebutton.Margin = new Thickness(4);
+            closebutton.Width = 12;
 
             // Tab Label Header stackpanel container
             StackPanel stackpanel = new StackPanel();
@@ -130,13 +130,16 @@ namespace FolderDash.Windows
 
             TabItem tabitem = new TabItem();
             tabitem.Header = stackpanel;
-            DashboardTabs.Items.Add(tabitem);
+            int tabid = DashboardTabs.Items.Add(tabitem);
+
+            DashboardTabs.SelectedIndex = tabid; 
 
         }
 
         private void DashboardTabs_Tab_CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            Button btn = (Button)sender;
+            //Button btn = (Button)sender;
+            Control btn = (Control)sender;
             StackPanel sp = (StackPanel)btn.Parent;
             TabItem tab = (TabItem)(sp.Parent);
             DashboardTabs.Items.Remove(tab);

@@ -52,12 +52,13 @@
             <GridSplitter Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" Width="4"></GridSplitter>
             <!--<StackPanel x:Name="ContentPanel" Grid.Row="0" Grid.Column="1" Orientation="Vertical"></StackPanel>-->
             <TabControl x:Name="DashboardTabs" Grid.Row="0" Grid.Column="1">
-                <!--<TabItem>
+                <!--
+                <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
-                            <Ellipse Width="10" Height="10" Fill="DarkGray"/>
-                            <Image Source="/FolderDash;component/Assets/folder.ico" Width="32"></Image>
+                            <Image Source="/FolderDash;component/Assets/folder.ico" Width="16"></Image>
                             <TextBlock>Tab 1</TextBlock>
+                            <crossButton:CrossButton Margin="4" Width="12" Click="DashboardTabs_Tab_CloseButton_Click" />
                         </StackPanel>
                     </TabItem.Header>
                     <StackPanel>
@@ -66,8 +67,20 @@
                     </StackPanel>
                 </TabItem>
                 <TabItem Header="Tab 2">
-                    --><!--Bind TextBlock.Text to the TextBox on the first TabItem.--><!--
+                     Bind TextBlock.Text to the TextBox on the first TabItem. 
                     <TextBlock Text="{Binding ElementName=textBox1, Path=Text}"/>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock>Tab 3</TextBlock>
+                            <crossButton:CrossButton Margin="4" Width="12" Click="CrossButton_Click" />
+                        </StackPanel>
+                    </TabItem.Header>
+                    <StackPanel>
+                        <TextBlock>Enter some text</TextBlock>
+                        <TextBox Name="textBox3" Width="50"/>
+                    </StackPanel>
                 </TabItem>-->
             </TabControl>
         </Grid>
