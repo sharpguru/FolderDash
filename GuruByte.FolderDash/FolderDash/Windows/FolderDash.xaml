@@ -46,7 +46,7 @@
                 <TreeViewItem x:Name="FolderTree_Dashboards" Header="Dashboards">
                     <!--<TreeViewItem Header="[Default]" MouseDoubleClick="FolderTree_Dashboards_Dashboard_MouseDoubleClick"></TreeViewItem>-->
                 </TreeViewItem>
-                <TreeViewItem Header="Computer" x:Name="tviComputer"></TreeViewItem>
+                <TreeViewItem Header="Computer" x:Name="FolderTree_Drives"></TreeViewItem>
                 <TreeViewItem Header="Network"></TreeViewItem>
             </TreeView>
             <GridSplitter Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" Width="4"></GridSplitter>

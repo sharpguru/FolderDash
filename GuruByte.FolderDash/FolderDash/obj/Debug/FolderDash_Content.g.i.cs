@@ -8,6 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("folder.ico")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("assets/document.png")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("assets/folder.png")]
 
 

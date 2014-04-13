@@ -84,24 +84,118 @@ namespace FolderDash.Windows
                 if (drive.IsReady)
                 {
                     tvi.Header = drive.VolumeLabel + " " + drive.Name;
+                    tvi.Tag = drive.Name;
+                    tvi.Selected += FolderTree_Drives_DriveSelected;
                 }
                 else
                 {
                     tvi.Header = drive.DriveType.ToString() + " " + drive.Name;
                 }
             
-                tviComputer.Items.Add(tvi);
+                FolderTree_Drives.Items.Add(tvi);
             }
 
             // TODO: Load Network shares
+        }
+
+        void FolderTree_Drives_DriveSelected(object sender, RoutedEventArgs e)
+        {
+            TreeViewItem item = (TreeViewItem)sender;
+            DriveInfo[] drives = DriveInfo.GetDrives();
+            var drive = drives.Where(d => d.Name == item.Tag.ToString()).FirstOrDefault();
+
+            var dir = drive.RootDirectory;
+            var subdirs = dir.GetDirectories();
+            var files = dir.GetFiles();
+
+            // Folder Image
+            Image img = new Image();
+            img.Width = 16;
+            BitmapImage logo = new BitmapImage();
+            logo.BeginInit();
+            logo.UriSource = new Uri("pack://application:,,,/FolderDash;component/Assets/folder.png");
+            logo.EndInit();
+            img.Source = logo;
+
+            // Tab label
+            TextBlock tablabel = new TextBlock();
+            tablabel.Text = item.Header.ToString();
+
+            // Close button
+            CrossButton.CrossButton closebutton = new CrossButton.CrossButton();
+            closebutton.Click += DashboardTabs_Tab_CloseButton_Click;
+            closebutton.Margin = new Thickness(4);
+            closebutton.Width = 12;
+
+            // Tab Label Header stackpanel container
+            StackPanel stackpanel = new StackPanel();
+            stackpanel.Orientation = Orientation.Horizontal;
+            stackpanel.Children.Add(img);
+            stackpanel.Children.Add(tablabel);
+            stackpanel.Children.Add(closebutton);
+
+            // Content
+            ListBox contentList = new ListBox();
+
+            // Directories
+            foreach (var subdir in subdirs)
+            {
+                StackPanel sp = new StackPanel();
+                sp.Orientation = Orientation.Horizontal;
+                Label lb = new Label();
+                lb.Content = subdir.Name;
+
+                Image i = new Image();
+                i.Source = logo;
+                i.Width = 16;
+
+                sp.Children.Add(i);
+                sp.Children.Add(lb);
+
+                contentList.Items.Add(sp);
+            }
+
+            // Document image
+            Image docimg = new Image();
+            docimg.Width = 16;
+            BitmapImage doclogo = new BitmapImage();
+            doclogo.BeginInit();
+            doclogo.UriSource = new Uri("pack://application:,,,/FolderDash;component/Assets/document.png");
+            doclogo.EndInit();
+            docimg.Source = doclogo;
+
+            // Files
+            foreach (var f in files)
+            {
+                StackPanel sp = new StackPanel();
+                sp.Orientation = Orientation.Horizontal;
+                Label lb = new Label();
+                lb.Content = f.Name;
+
+                Image i = new Image();
+                i.Source = doclogo;
+                i.Width = 16;
+
+                sp.Children.Add(i);
+                sp.Children.Add(lb);
+
+                contentList.Items.Add(sp);
+            }
+            
+
+            TabItem tabitem = new TabItem();
+            tabitem.Header = stackpanel;
+            tabitem.Content = contentList;
+            DashboardTabs.Items.Insert(0, tabitem);
+
+            DashboardTabs.SelectedIndex = 0; 
+
         }
 
         void FolderTree_Dashboards_Dashboard_item_Selected(object sender, RoutedEventArgs e)
         {
             TreeViewItem item = (TreeViewItem)sender;
             var dash = DashboardList.Find(d => d.Name == item.Header.ToString());
-
-            DashboardTabs.Items.Clear();
 
             // Folder Image
             Image img = new Image();
@@ -116,6 +210,7 @@ namespace FolderDash.Windows
             TextBlock tablabel = new TextBlock();
             tablabel.Text = " " + dash.Name + " - Dashboard ";
 
+            // Close button
             CrossButton.CrossButton closebutton = new CrossButton.CrossButton();
             closebutton.Click += DashboardTabs_Tab_CloseButton_Click;
             closebutton.Margin = new Thickness(4);
@@ -130,9 +225,9 @@ namespace FolderDash.Windows
 
             TabItem tabitem = new TabItem();
             tabitem.Header = stackpanel;
-            int tabid = DashboardTabs.Items.Add(tabitem);
+            DashboardTabs.Items.Insert(0, tabitem);
 
-            DashboardTabs.SelectedIndex = tabid; 
+            DashboardTabs.SelectedIndex = 0; 
 
         }
 
