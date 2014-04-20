@@ -61,6 +61,8 @@
     </ApplicationDefinition>
     <Compile Include="Extensions.cs" />
     <Compile Include="Models\Dashboard.cs" />
+    <Compile Include="Models\DashboardTabItem.cs" />
+    <Compile Include="Models\DashboardTreeViewItem.cs" />
     <Compile Include="Windows\FolderDash.xaml.cs">
       <DependentUpon>FolderDash.xaml</DependentUpon>
     </Compile>

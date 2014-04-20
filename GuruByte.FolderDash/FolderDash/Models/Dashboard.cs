@@ -25,6 +25,9 @@ namespace FolderDash.Models
             }
         }
 
+        /// <summary>
+        /// Returns reference to the currently running FolderDash application
+        /// </summary>
         public App CurrentApplication
         {
             get
@@ -33,6 +36,9 @@ namespace FolderDash.Models
             }
         }
 
+        /// <summary>
+        /// Returns the settings file from the application data path
+        /// </summary>
         public string SettingsFile
         {
             get
@@ -59,20 +65,26 @@ namespace FolderDash.Models
             if (File.Exists(settingsfile))
             {
                 XmlSerializer reader = new XmlSerializer(typeof(Dashboard));
-                StreamReader file = new StreamReader(settingsfile);
-
-                dashboard = (Dashboard)reader.Deserialize(file);
+                using (StreamReader file = new StreamReader(settingsfile))
+                {
+                    dashboard = (Dashboard)reader.Deserialize(file);
+                }
             }
 
             return dashboard;
         }
 
+        /// <summary>
+        /// Save dashboard file
+        /// </summary>
         public void Save()
         {
             XmlSerializer writer = new XmlSerializer(this.GetType());
-            StreamWriter file = new StreamWriter(SettingsFile);
-            writer.Serialize(file, this);
-            file.Close();
+            using (StreamWriter file = new StreamWriter(SettingsFile))
+            {
+                writer.Serialize(file, this);
+                file.Close();
+            }
         }
     }
 }

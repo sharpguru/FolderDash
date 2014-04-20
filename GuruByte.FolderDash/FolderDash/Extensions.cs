@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media;
 
 namespace FolderDash
 {
@@ -53,6 +55,40 @@ namespace FolderDash
         public static string FormatString(this string src, params object[] args)
         {
             return string.Format(src, args);
+        }
+    }
+
+    public static class FrameworkElementExtensions
+    {
+        /// <summary>
+        /// Search up the visual tree for a parent of given type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="child"></param>
+        /// <returns>Ancestor</returns>
+        public static T FindParent<T>(this DependencyObject child) where T : DependencyObject
+        {
+            if (child == null) return null;
+
+            T childisparent = child as T;
+            if (childisparent != null) return childisparent;
+
+            //get parent item
+            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
+
+            //we've reached the end of the tree
+            if (parentObject == null) return null;
+
+            //check if the parent matches the type we're looking for
+            T parent = parentObject as T;
+            if (parent != null)
+            {
+                return parent;
+            }
+            else
+            {
+                return FindParent<T>(parentObject);
+            }
         }
     }
 }
