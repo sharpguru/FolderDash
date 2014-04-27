@@ -42,6 +42,18 @@
                 <ColumnDefinition MinWidth="100"></ColumnDefinition>
                 <ColumnDefinition></ColumnDefinition>
             </Grid.ColumnDefinitions>
+            
+            <Button>
+                <Button.ContextMenu>
+                    <ContextMenu x:Name="FolderTree_Dashboard_BuddyMenu">
+                        <MenuItem Header="Delete" Click="FolderTree_Dashboard_BuddyMenu_Delete"/>
+                        <MenuItem Header="New" Click="FolderTree_Dashboard_BuddyMenu_New"/>
+                        <MenuItem Header="Open" Click="FolderTree_Dashboard_BuddyMenu_Open"/>
+                        <MenuItem Header="Rename" Click="FolderTree_Dashboard_BuddyMenu_Rename"/>
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
+
             <TreeView x:Name="FolderTree" Grid.Row="0" Grid.Column="0">
                 <TreeViewItem x:Name="FolderTree_Dashboards" Header="Dashboards">
                     <!--<TreeViewItem Header="[Default]" MouseDoubleClick="FolderTree_Dashboards_Dashboard_MouseDoubleClick"></TreeViewItem>-->

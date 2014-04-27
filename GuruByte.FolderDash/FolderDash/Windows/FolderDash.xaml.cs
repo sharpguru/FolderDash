@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -77,10 +78,7 @@ namespace FolderDash.Windows
 
             foreach (var d in DashboardList.OrderBy(x => x.Name))
             {
-                var item = new DashboardTreeViewItem(d.Name, FolderTree_Dashboards_Dashboard_item_Selected, 
-                    FolderTree_Dashboards_Dashboard_MouseDoubleClick);
-
-                FolderTree_Dashboards.Items.Add(item);
+                FolderTree_InsertDashboard(d);
             }
         }
 
@@ -126,6 +124,11 @@ namespace FolderDash.Windows
 
         private void MainMenu_File_NewDashboard_Click(object sender, RoutedEventArgs e)
         {
+            CreateNewDashboard();
+        }
+
+        private void CreateNewDashboard()
+        {
             var inputWindow = new InputBox() { Title = "New Dashboard", Prompt = "Name:" };
             var result = inputWindow.ShowDialog();
 
@@ -139,11 +142,66 @@ namespace FolderDash.Windows
                 {
                     Dashboard dashboard = new Dashboard() { Name = inputWindow.Value };
                     dashboard.Save();
+                    DashboardList.Insert(DashboardList.Count(), dashboard);
+                    FolderTree_InsertDashboard(dashboard);
                 }
             }
         }
 
+        private DashboardTreeViewItem FolderTree_InsertDashboard(Dashboard dashboard)
+        {
+            var item = new DashboardTreeViewItem(dashboard.Name, FolderTree_Dashboards_Dashboard_item_Selected,
+            FolderTree_Dashboards_Dashboard_MouseDoubleClick, FolderTree_Dashboards_Dashboard_MouseRightButtonUp);
+            FolderTree_Dashboards.Items.Add(item);
+            DashboardList.Add(dashboard);
+
+            return item;
+        }
+
         private void FolderTree_Dashboards_Dashboard_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+        }
+
+        private void FolderTree_Dashboards_Dashboard_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            TreeViewItem item = (TreeViewItem)sender;
+
+            item.ContextMenu = FolderTree_Dashboard_BuddyMenu;
+            item.ContextMenu.IsEnabled = true;
+            item.ContextMenu.PlacementTarget = item;
+            item.ContextMenu.Placement = PlacementMode.Bottom;
+            item.ContextMenu.IsOpen = true;
+        }
+
+        private void FolderTree_Dashboard_BuddyMenu_Delete(object sender, RoutedEventArgs e)
+        {
+            var OkToDelete = MessageBox.Show("OK to Delete?", "Confirm Delete", MessageBoxButton.OKCancel);
+
+            if (OkToDelete == MessageBoxResult.OK)
+            {
+                TreeViewItem item = FolderTree.SelectedItem as TreeViewItem;
+                var dash = DashboardList.Find(d => d.Name == item.Header.ToString());
+                
+                dash.Delete();
+                RemoveDashboard(item, dash);
+            }
+        }
+
+        private void RemoveDashboard(TreeViewItem item, Dashboard dash)
+        {
+            DashboardList.Remove(dash);
+            FolderTree_Dashboards.Items.Remove(item);
+
+            var dashtab = DashboardTabItem.Find(DashboardTabs, dash);
+            DashboardTabs.Items.Remove(dashtab);
+        }
+
+        private void FolderTree_Dashboard_BuddyMenu_New(object sender, RoutedEventArgs e)
+        {
+            CreateNewDashboard();
+        }
+
+        private void FolderTree_Dashboard_BuddyMenu_Open(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Process dashboard = new System.Diagnostics.Process();
             string location = this.GetType().Assembly.Location;
@@ -151,6 +209,23 @@ namespace FolderDash.Windows
             dashboard.StartInfo.Arguments = ((TreeViewItem)sender).Header.ToString();
 
             dashboard.Start();
+        }
+
+        private void FolderTree_Dashboard_BuddyMenu_Rename(object sender, RoutedEventArgs e)
+        {
+            TreeViewItem item = FolderTree.SelectedItem as TreeViewItem;
+            var dash = DashboardList.Find(d => d.Name == item.Header.ToString());
+
+            var inputWindow = new InputBox() { Title = "New Dashboard Name", Prompt = "Name:", DefaultResponse = dash.Name };
+            var result = inputWindow.ShowDialog();
+
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                RemoveDashboard(item, dash);
+                dash.Rename(inputWindow.Value);
+                DashboardList.Insert(DashboardList.Count(), dash);
+                FolderTree_InsertDashboard(dash);
+            }
         }
     }
 }

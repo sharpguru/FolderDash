@@ -16,11 +16,12 @@ namespace FolderDash.Models
 
         }
 
-        public DashboardTreeViewItem(object Header, RoutedEventHandler OnSelected = null, MouseButtonEventHandler OnMouseDoubleClick = null)
+        public DashboardTreeViewItem(object Header, RoutedEventHandler OnSelected = null, MouseButtonEventHandler OnMouseDoubleClick = null, MouseButtonEventHandler OnMouseRightButtonUp = null)
         {
             this.Header = Header;
             if (OnMouseDoubleClick != null) MouseDoubleClick += OnMouseDoubleClick;
             if (OnSelected != null) Selected += OnSelected;
+            if (OnMouseRightButtonUp != null) MouseRightButtonUp += OnMouseRightButtonUp;
         }
     }
 }

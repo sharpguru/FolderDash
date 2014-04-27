@@ -86,5 +86,23 @@ namespace FolderDash.Models
                 file.Close();
             }
         }
+
+        public void Delete()
+        {
+            if (File.Exists(SettingsFile))
+            {
+                File.Delete(SettingsFile);
+            }
+        }
+
+        public void Rename(string NewName)
+        {
+            if (File.Exists(SettingsFile))
+            {
+                File.Delete(SettingsFile);
+                Name = NewName;
+                Save();
+            }
+        }
     }
 }
