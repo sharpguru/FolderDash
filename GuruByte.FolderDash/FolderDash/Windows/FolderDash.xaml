@@ -53,7 +53,7 @@
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>
-
+            
             <TreeView x:Name="FolderTree" Grid.Row="0" Grid.Column="0">
                 <TreeViewItem x:Name="FolderTree_Dashboards" Header="Dashboards">
                     <!--<TreeViewItem Header="[Default]" MouseDoubleClick="FolderTree_Dashboards_Dashboard_MouseDoubleClick"></TreeViewItem>-->
@@ -63,7 +63,7 @@
             </TreeView>
             <GridSplitter Grid.Row="0" Grid.Column="0" HorizontalAlignment="Right" Width="4"></GridSplitter>
             <!--<StackPanel x:Name="ContentPanel" Grid.Row="0" Grid.Column="1" Orientation="Vertical"></StackPanel>-->
-            <TabControl x:Name="DashboardTabs" Grid.Row="0" Grid.Column="1">
+            <TabControl x:Name="DashboardTabs" Grid.Row="0" Grid.Column="1" MouseRightButtonUp="FolderTree_DashboardTabs_MouseRightButtonUp">
                 <!--
                 <TabItem>
                     <TabItem.Header>

@@ -6,8 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Xml.Serialization;
 
 namespace FolderDash.Models
 {
@@ -16,11 +19,39 @@ namespace FolderDash.Models
     /// </summary>
     public class DashboardTabItem : TabItem
     {
+        Dashboard dashboard { get; set; }
         Image img { get; set; }
         BitmapImage logo { get; set; }
         public TextBlock Title { get; set; }
         CrossButton.CrossButton closebutton { get; set; }
-        StackPanel stackpanel { get; set; }
+        StackPanel stackpanelHeader { get; set; }
+        ContextMenu contextmenu { get; set; }
+        Grid grid { get; set; }
+
+        public string BackgroundImagePath
+        { 
+            get
+            {
+                return backgroundImagePath;
+            }
+
+            set
+            {
+                backgroundImagePath = value;
+                var brush = new ImageBrush(new BitmapImage(new Uri(backgroundImagePath)));
+
+                try
+                {
+                    grid.Background = brush;
+                    dashboard.Save();
+                }
+                catch
+                {
+                    grid.Background = null;
+                }
+            }
+        }
+        private string backgroundImagePath = null;
 
         public DashboardTabItem()
         {
@@ -29,6 +60,9 @@ namespace FolderDash.Models
 
         public DashboardTabItem(Dashboard dash)
         {
+            // Set Parent
+            dashboard = dash;
+
             // Folder Image
             img = new Image();
             img.Width = 16;
@@ -44,25 +78,84 @@ namespace FolderDash.Models
 
             // Close button
             closebutton = new CrossButton.CrossButton();
-            closebutton.Click += closebutton_Click;
+            closebutton.Click += CloseButton_Click;
             closebutton.MouseEnter += closebutton_MouseEnter;
             closebutton.MouseLeave += closebutton_MouseLeave;
             closebutton.Margin = new Thickness(4);
             closebutton.Width = 12;
 
             // Tab Label Header stackpanel container
-            stackpanel = new StackPanel();
-            stackpanel.Orientation = Orientation.Horizontal;
-            stackpanel.Children.Add(img);
-            stackpanel.Children.Add(Title);
-            stackpanel.Children.Add(closebutton);
+            stackpanelHeader = new StackPanel();
+            stackpanelHeader.Orientation = Orientation.Horizontal;
+            stackpanelHeader.Children.Add(img);
+            stackpanelHeader.Children.Add(Title);
+            stackpanelHeader.Children.Add(closebutton);
 
-            this.Header = stackpanel;
+            this.Header = stackpanelHeader;
+
+            // Context menu
+            contextmenu = new System.Windows.Controls.ContextMenu();
+            MenuItem mnuClose = new MenuItem();
+            mnuClose.Header = "Close";
+            mnuClose.Click += CloseButton_Click;
+            MenuItem mnuBackground = new MenuItem();
+            mnuBackground.Header = "Set Background Image";
+            mnuBackground.Click += mnuBackground_Click;
+            contextmenu.Items.Add(mnuClose);
+            contextmenu.Items.Add(mnuBackground);
+            ContextMenu = contextmenu;
+            ContextMenu.IsEnabled = false;
+            ContextMenu.IsOpen = false;
+            MouseRightButtonUp += DashboardTabItem_MouseRightButtonUp;
 
             // Drag and Drop
             PreviewMouseMove += DashboardTabItem_PreviewMouseMove;
             Drop += DashboardTabItem_Drop;
             AllowDrop = true;
+
+            // Background image
+            //backgroundImagePath = @"C:\Work\Screen Backgrounds\firstlight21600.jpg";
+
+            grid = new Grid();
+            //var brush = new ImageBrush(new BitmapImage(new Uri(backgroundImagePath)));
+            //grid.Background = brush;
+
+            this.Content = grid;
+        }
+
+        void mnuBackground_Click(object sender, RoutedEventArgs e)
+        {
+            // Create OpenFileDialog 
+            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
+
+            // Set filter for file extension and default file extension 
+            dlg.DefaultExt = ".png";
+            dlg.Filter = "JPEG Files (*.jpeg)|*.jpeg|PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg|GIF Files (*.gif)|*.gif|All Files (*.*)|*.*";
+
+            // Display OpenFileDialog by calling ShowDialog method 
+            Nullable<bool> result = dlg.ShowDialog();
+
+
+            // Get the selected file name and display in a TextBox 
+            if (result == true)
+            {
+                // set background image
+                string filename = dlg.FileName;
+                BackgroundImagePath = filename;
+            }
+        }
+
+        void DashboardTabItem_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            OpenContextMenu(sender);
+        }
+
+        public void OpenContextMenu(object sender)
+        {
+            var root = ((FrameworkElement)sender).FindElement("DashboardTabs");
+            ContextMenu.IsEnabled = true;
+            ContextMenu.Placement = PlacementMode.MousePoint;
+            ContextMenu.IsOpen = true;
         }
 
         public DashboardTabItem(string DriveName, string TabLabel)
@@ -89,18 +182,18 @@ namespace FolderDash.Models
 
             // Close button
             closebutton = new CrossButton.CrossButton();
-            closebutton.Click += closebutton_Click;
+            closebutton.Click += CloseButton_Click;
             closebutton.MouseEnter += closebutton_MouseEnter;
             closebutton.MouseLeave += closebutton_MouseLeave;
             closebutton.Margin = new Thickness(4);
             closebutton.Width = 12;
 
             // Tab Label Header stackpanel container
-            stackpanel = new StackPanel();
-            stackpanel.Orientation = Orientation.Horizontal;
-            stackpanel.Children.Add(img);
-            stackpanel.Children.Add(Title);
-            stackpanel.Children.Add(closebutton);
+            stackpanelHeader = new StackPanel();
+            stackpanelHeader.Orientation = Orientation.Horizontal;
+            stackpanelHeader.Children.Add(img);
+            stackpanelHeader.Children.Add(Title);
+            stackpanelHeader.Children.Add(closebutton);
 
             // Content
             ListBox contentList = new ListBox();
@@ -150,7 +243,7 @@ namespace FolderDash.Models
                 contentList.Items.Add(sp);
             }
 
-            Header = stackpanel;
+            Header = stackpanelHeader;
             Content = contentList;
 
             // Drag and Drop
@@ -159,10 +252,9 @@ namespace FolderDash.Models
             AllowDrop = true;
         }
 
-        void closebutton_Click(object sender, RoutedEventArgs e)
+        public void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            DependencyObject child = (DependencyObject)sender;
-            TabItem tab = child.FindParent<TabItem>();
+            TabItem tab = this;
             TabControl DashboardTabs = tab.Parent as TabControl;
             DashboardTabs.Items.Remove(tab);
         }

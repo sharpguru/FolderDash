@@ -90,5 +90,36 @@ namespace FolderDash
                 return FindParent<T>(parentObject);
             }
         }
+
+        /// <summary>
+        /// Returns the root element in the visual tree
+        /// </summary>
+        /// <param name="descendant"></param>
+        /// <returns></returns>
+        public static FrameworkElement FindRoot(this FrameworkElement descendant)
+        {
+            if (descendant == null) return null;
+
+            // get parent item
+            FrameworkElement parent = (FrameworkElement)VisualTreeHelper.GetParent(descendant);
+
+            if (parent != null) 
+            {
+                return FindRoot(parent); // recurse through parents to find root
+            }
+
+            return descendant; // this is the root element
+        }
+
+        /// <summary>
+        /// Returns the first element found with Name starting from the root element
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public static Object FindElement(this FrameworkElement element, string Name)
+        {
+            FrameworkElement root = element.FindRoot();
+            return root.FindName(Name);
+        }
     }
 }

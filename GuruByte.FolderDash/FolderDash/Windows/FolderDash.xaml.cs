@@ -206,7 +206,9 @@ namespace FolderDash.Windows
             System.Diagnostics.Process dashboard = new System.Diagnostics.Process();
             string location = this.GetType().Assembly.Location;
             dashboard.StartInfo.FileName = location;
-            dashboard.StartInfo.Arguments = ((TreeViewItem)sender).Header.ToString();
+
+            TreeViewItem item = FolderTree.SelectedItem as TreeViewItem;
+            dashboard.StartInfo.Arguments = item.Header.ToString();
 
             dashboard.Start();
         }
@@ -226,6 +228,29 @@ namespace FolderDash.Windows
                 DashboardList.Insert(DashboardList.Count(), dash);
                 FolderTree_InsertDashboard(dash);
             }
+        }
+
+        private void FolderTree_DashboardTab_BuddyMenu_Close(object sender, RoutedEventArgs e)
+        {
+            var item = DashboardTabs.SelectedItem;
+
+            if (item is DashboardTabItem)
+            {
+                var dashitem = (DashboardTabItem)item;
+                dashitem.CloseButton_Click(sender, e);
+            }
+        }
+
+        private void FolderTree_DashboardTab_BuddyMenu_SetBackground(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void FolderTree_DashboardTabs_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var tab = (DashboardTabItem)DashboardTabs.SelectedItem;
+            
+            if (tab != null) tab.OpenContextMenu(tab);
         }
     }
 }
