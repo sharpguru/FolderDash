@@ -32,26 +32,26 @@ namespace FolderDash.Models
         { 
             get
             {
-                return backgroundImagePath;
+                return dashboard.BackgroundImagePath;
             }
 
             set
             {
-                backgroundImagePath = value;
-                var brush = new ImageBrush(new BitmapImage(new Uri(backgroundImagePath)));
+                dashboard.BackgroundImagePath = value;
 
                 try
                 {
+                    var brush = new ImageBrush(new BitmapImage(new Uri(value)));
                     grid.Background = brush;
-                    dashboard.Save();
                 }
                 catch
                 {
                     grid.Background = null;
+                    dashboard.BackgroundImagePath = string.Empty;
                 }
+                dashboard.Save();
             }
         }
-        private string backgroundImagePath = null;
 
         public DashboardTabItem()
         {
@@ -62,6 +62,7 @@ namespace FolderDash.Models
         {
             // Set Parent
             dashboard = dash;
+            dash.desktopShortcuts.CollectionChanged += desktopShortcuts_CollectionChanged;
 
             // Folder Image
             img = new Image();
@@ -113,14 +114,129 @@ namespace FolderDash.Models
             Drop += DashboardTabItem_Drop;
             AllowDrop = true;
 
-            // Background image
-            //backgroundImagePath = @"C:\Work\Screen Backgrounds\firstlight21600.jpg";
-
+            // Content Container
             grid = new Grid();
-            //var brush = new ImageBrush(new BitmapImage(new Uri(backgroundImagePath)));
-            //grid.Background = brush;
-
+            DefineGridRowsAndCols(grid, 5, 5);
             this.Content = grid;
+
+            // Load background image
+            BackgroundImagePath = dash.BackgroundImagePath;
+
+            // Load shortcuts
+            foreach (var sc in dashboard.desktopShortcuts) RenderShortcut(sc);
+        }
+
+        private void DefineGridRowsAndCols(Grid g, int rows, int cols)
+        {
+            if (rows <= 0) return;
+            if (cols <= 0) return;
+
+            for (int i = 1; i <= rows; i++)
+            {
+                g.RowDefinitions.Add(new RowDefinition());
+            }
+
+            for (int j = 1; j <= cols; j++)
+            {
+                g.ColumnDefinitions.Add(new ColumnDefinition());
+            }
+        }
+
+        /// <summary>
+        /// Loads icon image for shortcut and adds it to the grid
+        /// </summary>
+        /// <param name="shortcut"></param>
+        /// <returns>Returns the (col,row) coordinates shortcut was added to in the grid.</returns>
+        private Tuple<int, int> RenderShortcut(Shortcut shortcut)
+        {
+            Tuple<int, int> result = new Tuple<int, int>(-1, -1);
+
+            bool EmptyPositionFound = false;
+
+            for (int row = 0; row < grid.RowDefinitions.Count; row++)
+            {
+                if (EmptyPositionFound == true)
+                    break;
+
+                for (int col = 0; col < grid.ColumnDefinitions.Count; col++)
+                {
+                    // Find first empty position
+                    if (grid.Children.Count == 0)
+                    {
+                        EmptyPositionFound = true;
+                    }
+                    else
+                    {
+                        EmptyPositionFound = true;
+
+                        foreach(UIElement ui in grid.Children)
+                        {
+                            if ((int)ui.GetValue(Grid.ColumnProperty) == col && (int)ui.GetValue(Grid.RowProperty) == row)
+                            {
+                                EmptyPositionFound = false;
+                                break;
+                            }
+                        }
+                    }
+
+
+                    if (EmptyPositionFound == true)
+                    {
+                        //someImage.Source = GetIcon(somePath);
+                        Image img = new Image();
+                        var icon = System.Drawing.Icon.ExtractAssociatedIcon(shortcut.filename);
+                        img.Source = ConvertIconToImageSource(icon, typeof(System.Drawing.Bitmap), null, System.Globalization.CultureInfo.InvariantCulture);
+
+                        Grid.SetRow(img, row);
+                        Grid.SetColumn(img, col);
+
+                        grid.Children.Add(img);
+
+                        result = new Tuple<int, int>(col, row);
+
+                        break;
+                    }
+                }
+            }
+
+            if (result.Item1 == -1 && result.Item2 == -1) // item was not added
+            {
+                // Add new row to grid and try again
+                grid.RowDefinitions.Add(new RowDefinition());
+
+                result = RenderShortcut(shortcut);
+            }
+
+            return result;
+        }
+
+        public ImageSource ConvertIconToImageSource(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            System.Drawing.Icon ico = (value as System.Drawing.Icon);
+            System.Drawing.Bitmap bits = ico.ToBitmap();
+            MemoryStream strm = new MemoryStream();
+            // add the stream to the image streams collection so we can get rid of it later
+            //_imageStreams.Add(strm);
+            bits.Save(strm, System.Drawing.Imaging.ImageFormat.Png);
+            BitmapImage bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.StreamSource = strm;
+            bitmap.EndInit();
+            // freeze it here for performance
+            bitmap.Freeze();
+            return bitmap;
+        }
+
+        void desktopShortcuts_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+            {
+                // Display new shortcuts on desktop
+                foreach (var shortcut in e.NewItems.OfType<Shortcut>())
+                {
+                    RenderShortcut(shortcut);
+                }
+            }
         }
 
         void mnuBackground_Click(object sender, RoutedEventArgs e)
@@ -153,9 +269,13 @@ namespace FolderDash.Models
         public void OpenContextMenu(object sender)
         {
             var root = ((FrameworkElement)sender).FindElement("DashboardTabs");
-            ContextMenu.IsEnabled = true;
-            ContextMenu.Placement = PlacementMode.MousePoint;
-            ContextMenu.IsOpen = true;
+
+            if (ContextMenu != null)
+            {
+                ContextMenu.IsEnabled = true;
+                ContextMenu.Placement = PlacementMode.MousePoint;
+                ContextMenu.IsOpen = true;
+            }
         }
 
         public DashboardTabItem(string DriveName, string TabLabel)
@@ -275,27 +395,49 @@ namespace FolderDash.Models
 
         void DashboardTabItem_Drop(object sender, DragEventArgs e)
         {
-            var deptarget = sender as DependencyObject;
-            var tabItemTarget = deptarget.FindParent<DashboardTabItem>();
-
-            var depsource = e.Data.GetData(typeof(DashboardTabItem)) as DependencyObject;
-            var tabItemSource = depsource.FindParent<DashboardTabItem>();
-
-            if (tabItemSource == null)
-                return;
-
-            if (!tabItemTarget.Equals(tabItemSource))
+            // Drag-drop tab items
+            if (e.Data.GetDataPresent(typeof(DependencyObject)))
             {
-                var tabControl = tabItemTarget.Parent as TabControl;
-                int sourceIndex = tabControl.Items.IndexOf(tabItemSource);
-                int targetIndex = tabControl.Items.IndexOf(tabItemTarget);
+                var deptarget = sender as DependencyObject;
+                var tabItemTarget = deptarget.FindParent<DashboardTabItem>();
 
-                tabControl.Items.Remove(tabItemSource);
-                tabControl.Items.Insert(targetIndex, tabItemSource);
+                var depsource = e.Data.GetData(typeof(DashboardTabItem)) as DependencyObject;
+                var tabItemSource = depsource.FindParent<DashboardTabItem>();
 
-                tabControl.Items.Remove(tabItemTarget);
-                tabControl.Items.Insert(sourceIndex, tabItemTarget);
+                if (tabItemSource == null)
+                    return;
+
+                if (!tabItemTarget.Equals(tabItemSource))
+                {
+                    var tabControl = tabItemTarget.Parent as TabControl;
+                    int sourceIndex = tabControl.Items.IndexOf(tabItemSource);
+                    int targetIndex = tabControl.Items.IndexOf(tabItemTarget);
+
+                    tabControl.Items.Remove(tabItemSource);
+                    tabControl.Items.Insert(targetIndex, tabItemSource);
+
+                    tabControl.Items.Remove(tabItemTarget);
+                    tabControl.Items.Insert(sourceIndex, tabItemTarget);
+                }
+
+                return;
             }
+
+            // Drag-drop files and shortcuts
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] filenames = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                foreach (var file in filenames)
+                {
+                    //System.Drawing.Icon icon = System.Drawing.Icon.ExtractAssociatedIcon(file);
+
+                    dashboard.desktopShortcuts.Add(new Shortcut() { filename = file });
+                }
+            }
+
+            //var formats = e.Data.GetFormats();
+            
         }
 
         void closebutton_MouseEnter(object sender, MouseEventArgs e)

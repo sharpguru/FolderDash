@@ -63,6 +63,7 @@
     <Compile Include="Models\Dashboard.cs" />
     <Compile Include="Models\DashboardTabItem.cs" />
     <Compile Include="Models\DashboardTreeViewItem.cs" />
+    <Compile Include="Models\Shortcut.cs" />
     <Compile Include="Windows\FolderDash.xaml.cs">
       <DependentUpon>FolderDash.xaml</DependentUpon>
     </Compile>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,11 @@ namespace FolderDash.Models
     [Serializable]
     public class Dashboard
     {
-        private string _name = "[Default]";
+        public Dashboard()
+        {
+            // empty ctor
+        }
+
         public string Name 
         { 
             get
@@ -24,6 +29,7 @@ namespace FolderDash.Models
                 _name = value;
             }
         }
+        private string _name = "[Default]";
 
         /// <summary>
         /// Returns reference to the currently running FolderDash application
@@ -51,6 +57,22 @@ namespace FolderDash.Models
                 return settingsfile;
             }
         }
+
+        public string BackgroundImagePath
+        {
+            get
+            {
+                return backgroundImagePath;
+            }
+
+            set
+            {
+                backgroundImagePath = value;
+            }
+        }
+        private string backgroundImagePath = string.Empty;
+
+        public ObservableCollection<Shortcut> desktopShortcuts { get; set; }
 
         /// <summary>
         /// Load or reload settings from settings file
