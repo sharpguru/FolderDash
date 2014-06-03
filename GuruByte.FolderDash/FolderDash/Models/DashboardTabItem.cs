@@ -27,6 +27,7 @@ namespace FolderDash.Models
         StackPanel stackpanelHeader { get; set; }
         ContextMenu contextmenu { get; set; }
         Grid grid { get; set; }
+        ScrollViewer scrollViewer { get; set; }
 
         public string BackgroundImagePath
         { 
@@ -115,9 +116,13 @@ namespace FolderDash.Models
             AllowDrop = true;
 
             // Content Container
+            scrollViewer = new ScrollViewer();
+            scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
             grid = new Grid();
-            DefineGridRowsAndCols(grid, 5, 5);
-            this.Content = grid;
+            DefineGridSize(grid);
+            DefineGridRowsAndCols(grid);
+            scrollViewer.Content = grid;
+            this.Content = scrollViewer;
 
             // Load background image
             BackgroundImagePath = dash.BackgroundImagePath;
@@ -126,8 +131,19 @@ namespace FolderDash.Models
             foreach (var sc in dashboard.desktopShortcuts) RenderShortcut(sc);
         }
 
-        private void DefineGridRowsAndCols(Grid g, int rows, int cols)
+        private void DefineGridSize(Grid g)
         {
+            g.Height = System.Windows.SystemParameters.PrimaryScreenHeight;
+            g.Width = System.Windows.SystemParameters.PrimaryScreenWidth;
+            g.Height = grid.Height - 100; // subtract pixels for window header and footer
+            g.Width = grid.Width - 200; // subtract pixels for left hand sidebar
+        }
+
+        private void DefineGridRowsAndCols(Grid g)
+        {
+            int rows = (int)Math.Floor(grid.Height / 100);
+            int cols = (int)Math.Floor(grid.Width / 100);
+
             if (rows <= 0) return;
             if (cols <= 0) return;
 
@@ -182,15 +198,41 @@ namespace FolderDash.Models
 
                     if (EmptyPositionFound == true)
                     {
-                        //someImage.Source = GetIcon(somePath);
+                        // Create shortcut with image and text
+
+                        // img
                         Image img = new Image();
                         var icon = System.Drawing.Icon.ExtractAssociatedIcon(shortcut.filename);
                         img.Source = ConvertIconToImageSource(icon, typeof(System.Drawing.Bitmap), null, System.Globalization.CultureInfo.InvariantCulture);
 
-                        Grid.SetRow(img, row);
-                        Grid.SetColumn(img, col);
+                        // text
+                        TextBlock shortcutText = new TextBlock();
+                        shortcutText.Text = Path.GetFileName(shortcut.filename);
+                        var textBrush = new SolidColorBrush();
+                        textBrush.Color = Colors.White;
+                        shortcutText.Foreground = textBrush;
+                        shortcutText.TextWrapping = TextWrapping.Wrap;
+                        //shortcutText.HorizontalAlignment = System.Windows.HorizontalAlignment.Center;
+                        //shortcutText.VerticalAlignment = System.Windows.VerticalAlignment.Center;
+                        shortcutText.TextAlignment = TextAlignment.Center;
 
-                        grid.Children.Add(img);
+                        Grid shortcutpanel = new Grid();
+                        
+                        shortcutpanel.VerticalAlignment = VerticalAlignment.Stretch;
+                        shortcutpanel.HorizontalAlignment = HorizontalAlignment.Stretch;
+
+                        shortcutpanel.RowDefinitions.Add(new RowDefinition());
+                        Grid.SetRow(img, 0);
+                        shortcutpanel.Children.Add(img);
+                        
+                        shortcutpanel.RowDefinitions.Add(new RowDefinition());
+                        Grid.SetRow(shortcutText, 1);
+                        shortcutpanel.Children.Add(shortcutText);
+
+                        Grid.SetRow(shortcutpanel, row);
+                        Grid.SetColumn(shortcutpanel, col);
+
+                        grid.Children.Add(shortcutpanel);
 
                         result = new Tuple<int, int>(col, row);
 
