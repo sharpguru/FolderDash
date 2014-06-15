@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -118,10 +119,12 @@ namespace FolderDash.Models
             // Content Container
             scrollViewer = new ScrollViewer();
             scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
+
             grid = new Grid();
             DefineGridSize(grid);
             DefineGridRowsAndCols(grid);
             scrollViewer.Content = grid;
+
             this.Content = scrollViewer;
 
             // Load background image
@@ -216,23 +219,59 @@ namespace FolderDash.Models
                         //shortcutText.VerticalAlignment = System.Windows.VerticalAlignment.Center;
                         shortcutText.TextAlignment = TextAlignment.Center;
 
+                        #region Grid-based cell layout
                         Grid shortcutpanel = new Grid();
-                        
+
+                        // Default properties
                         shortcutpanel.VerticalAlignment = VerticalAlignment.Stretch;
                         shortcutpanel.HorizontalAlignment = HorizontalAlignment.Stretch;
 
+                        // Highlighting
+                        shortcutpanel.MouseEnter += shortcutpanel_MouseEnter;
+                        shortcutpanel.MouseLeave += shortcutpanel_MouseLeave;
+                        
+                        // Selection
+                        shortcutpanel.MouseLeftButtonUp += shortcutpanel_MouseLeftButtonUp;
+
+                        // Open
+                        shortcutpanel.MouseDown += shortcutpanel_MouseDown;
+
+                        // Add row for image
                         shortcutpanel.RowDefinitions.Add(new RowDefinition());
                         Grid.SetRow(img, 0);
                         shortcutpanel.Children.Add(img);
-                        
+
+                        // Add row for shortcut text
                         shortcutpanel.RowDefinitions.Add(new RowDefinition());
                         Grid.SetRow(shortcutText, 1);
                         shortcutpanel.Children.Add(shortcutText);
 
-                        Grid.SetRow(shortcutpanel, row);
-                        Grid.SetColumn(shortcutpanel, col);
+                        // Add row for shortcut id
+                        TextBlock shortcutIdText = new TextBlock();
+                        shortcutIdText.Text = shortcut.ID.ToString();
+                        shortcutIdText.Visibility = System.Windows.Visibility.Hidden;
+                        shortcutIdText.Name = "ShortcutID";
+                        shortcutpanel.Children.Add(shortcutIdText);
 
-                        grid.Children.Add(shortcutpanel);
+                        // Create a border for the grid
+                        Border border = new Border();
+                        border.BorderBrush = Brushes.Transparent;
+                        border.BorderThickness = new Thickness(2);
+
+                        // Position shortcut in an open spot on the grid
+                        Grid.SetRow(border, row);
+                        Grid.SetColumn(border, col);
+
+                        // Register names
+                        NameScope.SetNameScope(shortcutpanel, new NameScope());
+                        shortcutpanel.RegisterName(shortcutIdText.Name, shortcutIdText);
+                        
+                        // Place border around shortcut
+                        border.Child = shortcutpanel;
+
+                        // Add shortcut to grid
+                        grid.Children.Add(border);
+                        #endregion // Grid-based cell layout
 
                         result = new Tuple<int, int>(col, row);
 
@@ -250,6 +289,50 @@ namespace FolderDash.Models
             }
 
             return result;
+        }
+
+        void shortcutpanel_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2)
+            {
+                // double-click
+                var grid = sender as Grid;
+                var shortcut = grid.Shortcut(dashboard);
+
+                if (shortcut != null && shortcut.filename != null) Process.Start(shortcut.filename);
+            }
+        }
+
+        void shortcutpanel_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            // Select current shortcut
+            var grid = sender as Grid;
+
+            // Toggle background
+            if (grid.Background != null)
+            {
+                grid.Background = null;
+            }
+            else
+            {
+                Color color = (Color)ColorConverter.ConvertFromString("#6600ff00"); //(Color)ColorConverter.ConvertFromString("#66ff0000");
+                Brush b = new SolidColorBrush(color);
+                grid.Background = b; 
+            }
+        }
+
+        void shortcutpanel_MouseLeave(object sender, MouseEventArgs e)
+        {
+            var grid = sender as Grid;
+            var border = grid.FindParent<Border>();
+            border.BorderBrush = Brushes.Transparent;
+        }
+
+        void shortcutpanel_MouseEnter(object sender, MouseEventArgs e)
+        {
+            var grid = sender as Grid;
+            var border = grid.FindParent<Border>();
+            border.BorderBrush = Brushes.White;
         }
 
         public ImageSource ConvertIconToImageSource(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -522,6 +605,23 @@ namespace FolderDash.Models
             }
 
             return found;
+        }
+    }
+
+    public static class ShortcutExtensions
+    {
+        public static Shortcut Shortcut(this System.Windows.Controls.Grid grid, Dashboard dash)
+        {
+            Shortcut shortcut = null;
+            TextBlock textBlock = grid.FindName("ShortcutID") as TextBlock;
+
+            if (textBlock != null)
+            {
+                int ID = int.Parse(textBlock.Text);
+                shortcut = dash.desktopShortcuts.FirstOrDefault(s => s.ID == ID);
+            }
+
+            return shortcut;
         }
     }
 }
