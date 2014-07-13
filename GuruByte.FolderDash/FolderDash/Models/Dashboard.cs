@@ -29,7 +29,7 @@ namespace FolderDash.Models
                 _name = value;
             }
         }
-        private string _name = "[Default]";
+        private string _name = "My Dashboard";
 
         /// <summary>
         /// Returns reference to the currently running FolderDash application
@@ -43,26 +43,37 @@ namespace FolderDash.Models
         }
 
         /// <summary>
-        /// Returns the settings file from the application data path
+        /// Path to dashboard directory
+        /// </summary>
+        public string FolderPath { get; set; }
+
+        /// <summary>
+        /// Returns the settings file
         /// </summary>
         public string SettingsFile
         {
             get
             {
-                string AppDataPath = Environment.ExpandEnvironmentVariables(CurrentApplication.ApplicationDataPath);
-
                 // Get settings file if it exists
-                string settingsfile = Path.Combine(AppDataPath, Name.CleanFilename() + ".dashboard");
+                string settingsfile = Path.Combine(FolderPath, Name + ".dashboard");
 
                 return settingsfile;
             }
         }
 
+        private string backgroundImagePath = string.Empty;
         public string BackgroundImagePath
         {
             get
             {
-                return backgroundImagePath;
+                string result = backgroundImagePath;
+
+                if (string.IsNullOrEmpty(backgroundImagePath) && (!string.IsNullOrEmpty(BackgroundImageFileName)))
+                {
+                    result = Path.Combine(FolderPath, BackgroundImageFileName);
+                }
+
+                return result;
             }
 
             set
@@ -70,19 +81,34 @@ namespace FolderDash.Models
                 backgroundImagePath = value;
             }
         }
-        private string backgroundImagePath = string.Empty;
 
-        public ObservableCollection<Shortcut> desktopShortcuts { get; set; }
+        public string BackgroundImageFileName { get; set; }
+
+        private ObservableCollection<Shortcut> _desktopShortcuts = new ObservableCollection<Shortcut>();
+        public ObservableCollection<Shortcut> desktopShortcuts 
+        { 
+            get
+            {
+                return _desktopShortcuts;
+            }
+
+            set
+            {
+                _desktopShortcuts = value;
+            }
+        }
 
         /// <summary>
-        /// Load or reload settings from settings file
+        /// Open a dashboard from a directory path e.g. C:\Users\Brian\Documents\aaa.dashboard
         /// </summary>
-        static public Dashboard Load(string filename)
+        static public Dashboard Open(string folderPath)
         {
             Dashboard dashboard = new Dashboard();
 
-            string AppDataPath = Environment.ExpandEnvironmentVariables(dashboard.CurrentApplication.ApplicationDataPath);
-            string settingsfile = Path.Combine(AppDataPath, filename.CleanFilename() + ".dashboard");
+            string path = folderPath.Substring(0, folderPath.LastIndexOf('\\'));
+            string filename = folderPath.Substring(folderPath.LastIndexOf('\\') + 1);
+
+            string settingsfile = Path.Combine(folderPath, filename);
 
             if (File.Exists(settingsfile))
             {
@@ -93,6 +119,8 @@ namespace FolderDash.Models
                 }
             }
 
+            dashboard.FolderPath = folderPath;
+
             return dashboard;
         }
 
@@ -101,6 +129,13 @@ namespace FolderDash.Models
         /// </summary>
         public void Save()
         {
+            string settingsfile = Path.Combine(FolderPath, Name + ".dashboard");
+
+            if (!Directory.Exists(FolderPath))
+            {
+                Directory.CreateDirectory(FolderPath);
+            }
+
             XmlSerializer writer = new XmlSerializer(this.GetType());
             using (StreamWriter file = new StreamWriter(SettingsFile))
             {
@@ -115,6 +150,11 @@ namespace FolderDash.Models
             {
                 File.Delete(SettingsFile);
             }
+
+            if (Directory.Exists(FolderPath))
+            {
+                Directory.Delete(FolderPath);
+            }
         }
 
         public void Rename(string NewName)
@@ -122,6 +162,8 @@ namespace FolderDash.Models
             if (File.Exists(SettingsFile))
             {
                 File.Delete(SettingsFile);
+                string newFolderPath = FolderPath.Substring(0, FolderPath.LastIndexOf('\\')) + NewName;
+                Directory.Move(FolderPath, newFolderPath);
                 Name = NewName;
                 Save();
             }

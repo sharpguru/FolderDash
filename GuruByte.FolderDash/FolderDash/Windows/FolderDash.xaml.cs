@@ -23,6 +23,8 @@ namespace FolderDash.Windows
     public partial class FolderDash : Window
     {
         public App CurrentApplication { get { return App.Current as App; }}
+
+        public string FolderPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "FolderDash");
         
         public List<Dashboard> DashboardList
         {
@@ -68,12 +70,12 @@ namespace FolderDash.Windows
 
         private void LoadDashboards()
         {
-            var dashboardfiles = Directory.EnumerateFiles(CurrentApplication.ApplicationDataPath, "*.dashboard");
+            var dashboardfolders = Directory.EnumerateDirectories(FolderPath, "*.dashboard");
 
-            foreach (var f in dashboardfiles)
+            foreach (var f in dashboardfolders)
             {
-                string filename = System.IO.Path.GetFileNameWithoutExtension(f);
-                DashboardList.Add(Dashboard.Load(filename));
+                //string name = f.Substring(0, f.LastIndexOf('.'));
+                DashboardList.Add(Dashboard.Open(f));
             }
 
             foreach (var d in DashboardList.OrderBy(x => x.Name))
@@ -140,7 +142,11 @@ namespace FolderDash.Windows
                 }
                 else
                 {
-                    Dashboard dashboard = new Dashboard() { Name = inputWindow.Value };
+                    string name = inputWindow.Value;
+                    Dashboard dashboard = new Dashboard();
+                    dashboard.Name = name;
+                    dashboard.FolderPath = System.IO.Path.Combine(FolderPath, name + ".dashboard"); 
+
                     dashboard.Save();
                     DashboardList.Insert(DashboardList.Count(), dashboard);
                     FolderTree_InsertDashboard(dashboard);

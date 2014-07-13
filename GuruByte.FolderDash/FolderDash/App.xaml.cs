@@ -21,7 +21,7 @@ namespace FolderDash
         {
             get
             {
-                string AppData = Environment.ExpandEnvironmentVariables("%AppData%");
+                string AppData = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 string folderPath = Path.Combine(AppData, "FolderDash");
 
                 return folderPath;
@@ -43,7 +43,7 @@ namespace FolderDash
 
             if (e != null && e.Args != null && e.Args.Count() > 0)
             {
-                CurrentDashboard = Dashboard.Load(e.Args[0]);
+                CurrentDashboard = Dashboard.Open(Path.Combine(ApplicationDataPath, e.Args[0]));
             }
             #endregion // Load the dashboard
 
